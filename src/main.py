@@ -3,7 +3,6 @@ from tkinter import ttk
 from tkinter import *
 import sv_ttk
 from yt_dlp import YoutubeDL
-from time import sleep
 
 def main():
 
@@ -17,18 +16,29 @@ def main():
 
     sv_ttk.set_theme("dark")
 
+    url = ""
+
     def progress_hook(d):
+        global videoTitle
         if d['status'] == 'downloading':
             if 'total_bytes' in d:
-                percent = float(d['downloaded_bytes'] / d['total_bytes'] * 100)
+                percent = round(float(d['downloaded_bytes'] / d['total_bytes'] * 100), 2)
             else:
-                percent = float(d['downloaded_bytes'] / d['total_bytes_estimate'] * 100)
+                percent = round(float(d['downloaded_bytes'] / d['total_bytes_estimate'] * 100), 2)
+            progressText.config(text=f"{percent}% of {d['_total_bytes_str']} at {d['_speed_str']}")
             progressBar['value'] = percent
             progressBar.update()
+            statusText.config(text=f'Downloading: "{videoTitle}"')
+        elif d['status'] == 'finished':
+            progressText.config(text="100.0%")
+            progressBar['value'] = 100.0
+            statusText.config(text=f'Finished: "{videoTitle}"')
 
     def downloadVideo():
         statusText.config(text="")
-        progressBar.pack(anchor="center")
+        progressBar.pack()
+        progressText.pack()
+        global url
         url = inputBox.get("1.0", "end-1c")
         ydl_opts = {
             'progress_hooks': [progress_hook],
@@ -39,9 +49,12 @@ def main():
 
         try:
             with YoutubeDL(ydl_opts) as ydl:
+                global videoTitle
+                videoInfo = ydl.extract_info(url, download=False)
+                videoTitle = videoInfo.get('title', None)
                 ydl.download(url)
-        except: 
-            statusText.config(text=f"URL is not valid.")
+        except Exception as e: 
+            statusText.config(text=f"Error: {e}")
 
     def optionsWindow():
         clearScreen()
@@ -59,13 +72,14 @@ def main():
     downloadButton = ttk.Button(root, text="Download", command=downloadVideo)
     optionsButton = ttk.Button(root, text="Options", command=optionsWindow)
     progressBar = ttk.Progressbar(root, length=300)
+    progressText = ttk.Label(root)
     statusText = ttk.Label(root)
 
     def mainWindow():
         clearScreen()
         inputBox.pack(anchor='center', pady=20)
-        downloadButton.pack(anchor='center', pady=10)
         optionsButton.pack(anchor='center', pady=10)
+        downloadButton.pack(anchor='center', pady=10)
         statusText.pack(anchor='center', pady=20)
         statusText.config(text="")
 
