@@ -53,8 +53,11 @@ def main():
                 videoInfo = ydl.extract_info(url, download=False)
                 videoTitle = videoInfo.get('title', None)
                 ydl.download(url)
-        except Exception as e: 
-            statusText.config(text=f"Error: {e}")
+        except Exception as e:
+            if " is not a valid URL." in str(e):
+                statusText.config(text=f'Error: URL "{url}" is not valid.')
+            else:
+                statusText.config(text=f"Error: {e}")
 
     def optionsWindow():
         clearScreen()
