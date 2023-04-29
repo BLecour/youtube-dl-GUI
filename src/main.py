@@ -6,6 +6,8 @@ from PIL import Image, ImageTk
 from urllib.request import urlopen
 import sv_ttk
 
+import traceback
+
 def main():
 
     root = tk.Tk()
@@ -30,16 +32,28 @@ def main():
                 percent = round(float(d['downloaded_bytes'] / d['total_bytes_estimate'] * 100), 2)
 
             # convert bytes per second to mebibytes per second
-            speed = round(float(d['speed']) / 1048576.0, 2) 
-            seconds = int(d['eta']) % 60
-            minutes = int(d['eta'] / 60)
+            if d['speed'] == None:
+                speed = 0.
+            else:
+                speed = round(float(d['speed']) / 1048576.0, 2)
+            
+            try:
+                seconds = int(d['eta']) % 60
+            except:
+                seconds = 0
+
+            try:
+                minutes = int(d['eta'] / 60)
+            except:
+                minutes = 0
+
             progressText.config(text=f"{percent}% of {d['_total_bytes_str']} at {speed}MiB/s\nETA: {minutes:02d}:{seconds:02d}")
 
             progressBar['value'] = percent
             progressBar.update()
             statusText.config(text=f'Downloading: "{videoTitle}"')
         elif d['status'] == 'finished':
-            speed = round(float(d['speed']) / 1048576.0, 2) 
+            speed = round((d['speed']) / 1048576.0, 2) 
             progressText.config(text=f"100.00% of {d['_total_bytes_str']} at {speed}MiB/s\nETA: 00:00")
             progressBar['value'] = 100.0
             statusText.config(text=f'Finished: "{videoTitle}"')
@@ -62,6 +76,13 @@ def main():
                 global videoTitle
                 videoInfo = ydl.extract_info(url, download=False)
                 videoTitle = videoInfo.get('title', None)
+                formats = videoInfo.get('formats', None)
+                for format in formats:
+                    if 'filesize' in format:
+                        print(format['format_id'], format['ext'], format['resolution'], format['fps'], format['filesize'])
+                    else:
+                        print(format['format_id'], format['ext'], format['resolution'], format['fps'])
+
                 try:
                     thumbnailURL = "http://img.youtube.com/vi/" + videoInfo.get("id", None) + "/0.jpg"
                     print(thumbnailURL)
@@ -74,9 +95,10 @@ def main():
                     thumbnailLabel.pack()
 
                 except Exception as e:
-                    print(f"Unable to display thumbnail: {e}")
+                    statusText.config(text=f"Unable to display thumbnail: {e}")
                 ydl.download(url)
         except Exception as e:
+            print("There was an error: " + e.args[0] + ". The line where the code failed was " + str(traceback.extract_stack()[-1][1]))
             if " is not a valid URL." in str(e):
                 statusText.config(text=f'Error: URL "{url}" is not valid.')
             else:
