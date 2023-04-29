@@ -49,7 +49,7 @@ def main():
         progressBar.pack()
         progressText.pack()
         global url
-        url = inputBox.get("1.0", "end-1c")
+        url = inputBox.get()
         ydl_opts = {
             'progress_hooks': [progress_hook],
         }
@@ -94,7 +94,7 @@ def main():
             widget.pack_forget()
         root.update()
 
-    inputBox = tk.Text(root, height=10, width=50, borderwidth=2, relief='groove')
+    inputBox = ttk.Entry(root, width=40)
     downloadButton = ttk.Button(root, text="Download", command=downloadVideo)
     optionsButton = ttk.Button(root, text="Options", command=optionsWindow)
     progressBar = ttk.Progressbar(root, length=300)
