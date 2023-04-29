@@ -6,8 +6,6 @@ from PIL import Image, ImageTk
 from urllib.request import urlopen
 import sv_ttk
 
-import traceback
-
 def main():
 
     root = tk.Tk()
@@ -15,7 +13,7 @@ def main():
     audioToggle = IntVar(root)
     audioToggle.set(0)
 
-    root.geometry("640x480")
+    root.geometry("800x600")
     root.title("youtube-dl GUI")
 
     sv_ttk.set_theme("dark")
@@ -98,7 +96,6 @@ def main():
                     statusText.config(text=f"Unable to display thumbnail: {e}")
                 ydl.download(url)
         except Exception as e:
-            print("There was an error: " + e.args[0] + ". The line where the code failed was " + str(traceback.extract_stack()[-1][1]))
             if " is not a valid URL." in str(e):
                 statusText.config(text=f'Error: URL "{url}" is not valid.')
             else:
