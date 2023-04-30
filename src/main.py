@@ -59,7 +59,7 @@ def main():
     def downloadVideo():
         statusText.config(text="")
         progressBar.pack()
-        progressText.pack()
+        progressText.pack(pady=10)
         global url
         url = inputBox.get()
         ydl_opts = {
@@ -75,11 +75,14 @@ def main():
                 videoInfo = ydl.extract_info(url, download=False)
                 videoTitle = videoInfo.get('title', None)
                 formats = videoInfo.get('formats', None)
-                for format in formats:
-                    if 'filesize' in format:
-                        print(format['format_id'], format['ext'], format['resolution'], format['fps'], format['filesize'])
-                    else:
-                        print(format['format_id'], format['ext'], format['resolution'], format['fps'])
+
+                # if the download is a playlist then 'formats' is empty at first. this avoids error
+                if formats != None:
+                    for format in formats:
+                        if 'filesize' in format:
+                            print(format['format_id'], format['ext'], format['resolution'], format['fps'], format['filesize'])
+                        else:
+                            print(format['format_id'], format['ext'], format['resolution'], format['fps'])
 
                 try:
                     thumbnailURL = "http://img.youtube.com/vi/" + videoInfo.get("id", None) + "/0.jpg"
@@ -117,11 +120,12 @@ def main():
     downloadButton = ttk.Button(root, text="Download", command=downloadVideo)
     optionsButton = ttk.Button(root, text="Options", command=optionsWindow)
     progressBar = ttk.Progressbar(root, length=300)
-    progressText = ttk.Label(root)
+    progressText = ttk.Label(root, justify='center')
     statusText = ttk.Label(root)
 
     def mainWindow():
         clearScreen()
+        ttk.Label(root, text="Enter URL below:").pack(pady=10)
         inputBox.pack(anchor='center', pady=20)
         optionsButton.pack(anchor='center', pady=10)
         downloadButton.pack(anchor='center', pady=10)
