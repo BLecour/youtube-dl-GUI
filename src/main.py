@@ -12,6 +12,10 @@ def main():
 
     audioToggle = IntVar(root)
     audioToggle.set(0)
+    formatToggle = IntVar(root)
+    formatToggle.set(0)
+    formatSelection = IntVar(root)
+
 
     root.geometry("800x600")
     root.title("youtube-dl GUI")
@@ -46,12 +50,14 @@ def main():
                 minutes = 0
 
             progressText.config(text=f"{percent}% of {d['_total_bytes_str']} at {speed}MiB/s\nETA: {minutes:02d}:{seconds:02d}")
-
             progressBar['value'] = percent
             progressBar.update()
             statusText.config(text=f'Downloading: "{videoTitle}"')
         elif d['status'] == 'finished':
-            speed = round((d['speed']) / 1048576.0, 2) 
+            if d['speed'] == None:
+                speed = 0.
+            else:
+                speed = round(float(d['speed']) / 1048576.0, 2)
             progressText.config(text=f"100.00% of {d['_total_bytes_str']} at {speed}MiB/s\nETA: 00:00")
             progressBar['value'] = 100.0
             statusText.config(text=f'Finished: "{videoTitle}"')
@@ -76,13 +82,35 @@ def main():
                 videoTitle = videoInfo.get('title', None)
                 formats = videoInfo.get('formats', None)
 
-                # if the download is a playlist then 'formats' is empty at first. this avoids error
-                if formats != None:
-                    for format in formats:
-                        if 'filesize' in format:
-                            print(format['format_id'], format['ext'], format['resolution'], format['fps'], format['filesize'])
-                        else:
-                            print(format['format_id'], format['ext'], format['resolution'], format['fps'])
+            if formatToggle.get():
+                popup = tk.Toplevel()
+                popup.geometry("300x300")
+                popup.wm_title("Select Format")
+
+                canvas = tk.Canvas(popup)
+                canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                
+                scrollbar = ttk.Scrollbar(popup, command=canvas.yview)
+                scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+                canvas.configure(yscrollcommand=scrollbar.set)
+                
+                frame = ttk.Frame(canvas)
+                canvas.create_window((0, 0), window=frame, anchor=tk.NW)
+
+                for format in formats:
+                    if 'filesize' in format:
+                        ttk.Radiobutton(frame, text=f"Format ID = {format['format_id']}", variable=formatSelection, value=format['format_id']).pack(pady=20)
+
+                frame.update_idletasks()
+                canvas.config(scrollregion=canvas.bbox(tk.ALL))
+
+            # if the download is a playlist then 'formats' is empty at first. this avoids error
+            if formats != None:
+                for format in formats:
+                    if 'filesize' in format:
+                        print(format['format_id'], format['ext'], format['resolution'], format['fps'], format['filesize'])
+                    else:
+                        print(format['format_id'], format['ext'], format['resolution'], format['fps'])
 
                 try:
                     thumbnailURL = "http://img.youtube.com/vi/" + videoInfo.get("id", None) + "/0.jpg"
@@ -106,8 +134,8 @@ def main():
 
     def optionsWindow():
         clearScreen()
-        audio = ttk.Checkbutton(root, text="Audio Only", variable=audioToggle, onvalue=1, offvalue=0)
-        audio.pack(pady=20)
+        ttk.Checkbutton(root, text="Audio Only", variable=audioToggle, onvalue=1, offvalue=0).pack(pady=20)
+        ttk.Checkbutton(root, text="Select Format", variable=formatToggle, onvalue=1, offvalue=0).pack(pady=10)
         backButton = ttk.Button(root, text="Back to Main", command=lambda: [clearScreen(), mainWindow()])
         backButton.pack(pady=20)
 
