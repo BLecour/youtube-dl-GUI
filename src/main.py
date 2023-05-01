@@ -84,7 +84,7 @@ def main():
 
             if formatToggle.get():
                 popup = tk.Toplevel()
-                popup.geometry("300x300")
+                popup.geometry("600x300")
                 popup.wm_title("Select Format")
 
                 canvas = tk.Canvas(popup)
@@ -98,20 +98,18 @@ def main():
                 canvas.create_window((0, 0), window=frame, anchor=tk.NW)
 
                 for format in formats:
-                    if 'filesize' in format:
-                        ttk.Radiobutton(frame, text=f"Format ID = {format['format_id']}", variable=formatSelection, value=format['format_id']).pack(pady=20)
+                    if 'filesize' in format and format['filesize'] is not None:
+                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = {round(int(format['filesize']) / 1048576, 2)}MiB", variable=formatSelection, value=format['format_id']).pack(pady=20)
+                    elif 'filesize_approx' in format and format['filesize_approx'] is not None:
+                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = {round(int(format['filesize_approx']) / 1048576, 2)}MiB", variable=formatSelection, value=format['format_id']).pack(pady=20)
+                    else:
+                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = Unknown", variable=formatSelection, value=format['format_id']).pack(pady=20)
 
                 frame.update_idletasks()
                 canvas.config(scrollregion=canvas.bbox(tk.ALL))
 
             # if the download is a playlist then 'formats' is empty at first. this avoids error
-            if formats != None:
-                for format in formats:
-                    if 'filesize' in format:
-                        print(format['format_id'], format['ext'], format['resolution'], format['fps'], format['filesize'])
-                    else:
-                        print(format['format_id'], format['ext'], format['resolution'], format['fps'])
-
+            if formats != None:              
                 try:
                     thumbnailURL = "http://img.youtube.com/vi/" + videoInfo.get("id", None) + "/0.jpg"
                     print(thumbnailURL)
