@@ -97,6 +97,9 @@ def main():
                 frame = ttk.Frame(canvas)
                 canvas.create_window((0, 0), window=frame, anchor=tk.NW)
 
+                def on_mousewheel(event):
+                    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
                 for format in formats:
                     if 'filesize' in format and format['filesize'] is not None:
                         ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = {round(int(format['filesize']) / 1048576, 2)}MiB", variable=formatSelection, value=format['format_id']).pack(pady=20)
@@ -107,6 +110,7 @@ def main():
 
                 frame.update_idletasks()
                 canvas.config(scrollregion=canvas.bbox(tk.ALL))
+                canvas.bind_all("<MouseWheel>", on_mousewheel)
 
             # if the download is a playlist then 'formats' is empty at first. this avoids error
             if formats != None:              
