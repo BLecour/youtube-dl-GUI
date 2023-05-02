@@ -16,7 +16,6 @@ def main():
     formatToggle.set(0)
     formatSelection = IntVar(root)
 
-
     root.geometry("800x600")
     root.title("youtube-dl GUI")
 
@@ -83,22 +82,23 @@ def main():
                 formats = videoInfo.get('formats', None)
 
             if formatToggle.get():
-                popup = tk.Toplevel()
-                popup.geometry("600x300")
-                popup.wm_title("Select Format")
+                clearScreen()
 
-                canvas = tk.Canvas(popup)
-                canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                canvas = tk.Canvas(root)
                 
-                scrollbar = ttk.Scrollbar(popup, command=canvas.yview)
+                scrollbar = ttk.Scrollbar(root, command=canvas.yview)
                 scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+                canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
                 canvas.configure(yscrollcommand=scrollbar.set)
                 
-                frame = ttk.Frame(canvas)
+                frame = ttk.Frame(root)
                 canvas.create_window((0, 0), window=frame, anchor=tk.NW)
 
                 def on_mousewheel(event):
                     canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+                ttk.Label(root, text="Select a format then click next:").pack(pady=10)
 
                 for format in formats:
                     if 'filesize' in format and format['filesize'] is not None:
@@ -127,7 +127,7 @@ def main():
 
                 except Exception as e:
                     statusText.config(text=f"Unable to display thumbnail: {e}")
-                ydl.download(url)
+                #ydl.download(url)
         except Exception as e:
             if " is not a valid URL." in str(e):
                 statusText.config(text=f'Error: URL "{url}" is not valid.')
