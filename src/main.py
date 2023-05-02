@@ -24,6 +24,30 @@ def main():
     url = ""
     thumbnailURL = ""
 
+    def next():
+        clicked.set(True)
+
+    nextButton = ttk.Button(root, text="Next", command=next)
+
+    def waitForInput():
+        """Waits for the user to select a radio button and click the next button."""
+        # Disable the next button until a radio button is selected
+        nextButton.config(state=tk.DISABLED)
+
+        # Wait for a radio button to be selected
+        root.wait_variable(formatSelection)
+
+        # Enable the next button when a radio button is selected
+        nextButton.config(state=tk.NORMAL)
+
+        # Wait for the next button to be clicked
+        nextButton.wait_variable(clicked)
+
+    def radioButtonSelected():
+        nextButton.config(state=tk.NORMAL)
+
+    clicked = tk.BooleanVar()
+
     def progress_hook(d):
         global videoTitle
         if d['status'] == 'downloading':
@@ -102,15 +126,19 @@ def main():
 
                 for format in formats:
                     if 'filesize' in format and format['filesize'] is not None:
-                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = {round(int(format['filesize']) / 1048576, 2)}MiB", variable=formatSelection, value=format['format_id']).pack(pady=20)
+                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = {round(int(format['filesize']) / 1048576, 2)}MiB", variable=formatSelection, value=format['format_id'], command=radioButtonSelected).pack(pady=20)
                     elif 'filesize_approx' in format and format['filesize_approx'] is not None:
-                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = {round(int(format['filesize_approx']) / 1048576, 2)}MiB", variable=formatSelection, value=format['format_id']).pack(pady=20)
+                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = {round(int(format['filesize_approx']) / 1048576, 2)}MiB", variable=formatSelection, value=format['format_id'], command=radioButtonSelected).pack(pady=20)
                     else:
-                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = Unknown", variable=formatSelection, value=format['format_id']).pack(pady=20)
+                        ttk.Radiobutton(frame, text=f"ID = {format['format_id']}, Resolution = {format['resolution']}, Filesize = Unknown", variable=formatSelection, value=format['format_id'], command=radioButtonSelected).pack(pady=20)
+
+                nextButton.pack(pady=10)
 
                 frame.update_idletasks()
                 canvas.config(scrollregion=canvas.bbox(tk.ALL))
                 canvas.bind_all("<MouseWheel>", on_mousewheel)
+
+                waitForInput()
 
             # if the download is a playlist then 'formats' is empty at first. this avoids error
             if formats != None:              
