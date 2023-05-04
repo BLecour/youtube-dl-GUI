@@ -10,7 +10,7 @@ def main():
 
     root = tk.Tk()
 
-    root.geometry("800x600")
+    root.geometry("1024x768")
     root.title("youtube-dl GUI")
 
     sv_ttk.set_theme("dark")
